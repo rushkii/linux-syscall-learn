@@ -24,8 +24,8 @@ __attribute__((naked)) void _start(void) {
 
 		"call main\n"
 
-		"mov rax, 60\n"
 		"mov rdi, rax\n"
+		"mov rax, 60\n"
 		"syscall\n"
 
 		".att_syntax\n"
