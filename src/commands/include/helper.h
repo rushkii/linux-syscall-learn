@@ -72,4 +72,19 @@ static inline long syscall4(long rax, long rdi, long rsi, long rdx, long r10) {
 	return rax;
 }
 
+static inline long syscall6(long rax, long rdi, long rsi, long rdx, long r10, long r8, long r9) {
+	register long reg10 __asm__("r10") = r10;
+	register long reg8 __asm__("r8") = r8;
+	register long reg9 __asm__("r9") = r9;
+
+	__asm__ volatile (
+		"syscall"
+		: "+a" (rax)
+		: "D" (rdi), "S" (rsi), "d" (rdx), "r" (reg10), "r" (reg8), "r" (reg9)
+		: "rcx", "r11", "memory"
+	);
+
+	return rax;
+}
+
 #endif
