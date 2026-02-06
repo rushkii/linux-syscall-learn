@@ -45,15 +45,18 @@ static inline long munmap(void *addr, unsigned long len) {
 }
 
 static inline int fcopy(const char *src, const char *dst, unsigned short mode) {
+	// create a virtual address with the given BUF_SIZE
 	char *buf = (char *)mmap(0, BUF_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	if ((long)buf < 0) return -1;
 
+	// open the source path (argv[1])
 	int fsrc = sys_open(src, O_RDONLY, 0);
 	if (fsrc < 0) {
 		sys_munmap(buf, BUF_SIZE);
 		return -1;
 	}
 
+	// open the destination path (argv[2])
 	int fdst = sys_open(dst, O_WRONLY | O_CREAT | O_TRUNC, mode);
 	if (fdst < 0) {
 		sys_close(fsrc);
@@ -90,6 +93,7 @@ static inline int fcopy(const char *src, const char *dst, unsigned short mode) {
 		}
 	}
 
+	// clean up
 	sys_close(fsrc);
 	sys_close(fdst);
 	sys_munmap(buf, BUF_SIZE);
@@ -100,21 +104,30 @@ static inline int fcopy(const char *src, const char *dst, unsigned short mode) {
 static inline int move(const char *src, const char *dest) {
 	struct stat src_stat;
 
+	// get source path stats
 	if (stat(src, &src_stat) < 0) {
 		println("Source file not found!");
 		return -1;
 	}
 
+	// try to move with rename first
 	long ret = frename(src, dest);
 
+	// if it's sucess then no need to continue
 	if (ret == 0) return 0;
 
+	// this part if using cross-device method
+	// e.g moving from disk A to disk B
 	if (ret == -EXDEV) {
+
+		// this method will use read source file and write dest file
+		// definitely copy file from source to destination
 		if (fcopy(src, dest, src_stat.st_mode) < 0) {
 			println("Failed while trying to copy the file");
 			return -1;
 		}
 
+		// and then remove the source file.
 		if (unlink(src) < 0) {
 			println("Failed while trying to delete the source file");
 			return -1;
