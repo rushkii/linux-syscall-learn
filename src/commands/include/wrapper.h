@@ -9,8 +9,11 @@
 #define SYS_STAT	4
 #define SYS_FSTAT	5
 #define SYS_LSTAT	6
+#define SYS_MMAP	9
+#define SYS_MUNMAP	11
 #define SYS_EXIT	60
 #define SYS_RENAME	82
+#define SYS_UNLINK	87
 
 
 static inline long sys_read(unsigned int fd, char *buf, unsigned int count) {
@@ -46,6 +49,18 @@ static inline long sys_lstat(const char *filename, struct stat *statbuf) {
 	return syscall2(SYS_STAT, (long)filename, (long)statbuf);
 }
 
+static inline void *sys_mmap(void *addr, unsigned long len, int prot, int flags, int fd, long offset) {
+	return (void *)syscall6(SYS_MMAP, (long)addr, len, prot, flags, fd, offset);
+}
+
+static inline long sys_munmap(void *addr, unsigned long len) {
+	return syscall2(SYS_MUNMAP, (long)addr, len);
+}
+
 static inline long sys_rename(const char *oldname, const char *newname) {
 	return syscall2(SYS_RENAME, (long)oldname, (long)newname);
+}
+
+static inline long sys_unlink(const char *pathname) {
+	return syscall1(SYS_UNLINK, (long)pathname);
 }
