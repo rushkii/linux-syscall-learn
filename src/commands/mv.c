@@ -1,4 +1,4 @@
-#include "./include/high.h"
+#include "include/high.h"
 
 
 int main(int argc, char *argv[]) {
@@ -8,6 +8,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	int moved = move(argv[1], argv[2]);
+
+	if (moved < 0) println("Failed while trying to move the file");
 
 	return 0;
 }
