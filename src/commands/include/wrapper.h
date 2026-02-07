@@ -1,6 +1,7 @@
 
 #include "helper.h"
 #include "struct.h"
+#include "type.h"
 
 #define SYS_READ	0
 #define SYS_WRITE	1
@@ -16,19 +17,19 @@
 #define SYS_UNLINK	87
 
 
-static inline long sys_read(unsigned int fd, char *buf, unsigned int count) {
+static inline long sys_read(uint fd, char *buf, uint count) {
 	return syscall3(SYS_READ, fd, (long)buf, count);
 }
 
-static inline long sys_write(unsigned int fd, const char *buf, unsigned int count) {
+static inline long sys_write(uint fd, cstr buf, uint count) {
 	return syscall3(SYS_WRITE, fd, (long)buf, count);
 }
 
-static inline long sys_open(const char *filename, int flags, unsigned short mode) {
+static inline long sys_open(cstr filename, int flags, ushort mode) {
 	return syscall3(SYS_OPEN, (long)filename, flags, mode);
 }
 
-static inline long sys_close(unsigned int fd) {
+static inline long sys_close(uint fd) {
 	return syscall1(SYS_CLOSE, fd);
 }
 
@@ -37,30 +38,30 @@ static inline long sys_exit(int code) {
     	__builtin_unreachable();
 }
 
-static inline long sys_stat(const char *filename, struct stat *statbuf) {
+static inline long sys_stat(cstr filename, struct stat *statbuf) {
 	return syscall2(SYS_STAT, (long)filename, (long)statbuf);
 }
 
-static inline long sys_fstat(unsigned int fd, struct stat *statbuf) {
+static inline long sys_fstat(uint fd, struct stat *statbuf) {
 	return syscall2(SYS_STAT, (long)fd, (long)statbuf);
 }
 
-static inline long sys_lstat(const char *filename, struct stat *statbuf) {
+static inline long sys_lstat(cstr filename, struct stat *statbuf) {
 	return syscall2(SYS_STAT, (long)filename, (long)statbuf);
 }
 
-static inline void *sys_mmap(void *addr, unsigned long len, int prot, int flags, int fd, long offset) {
+static inline void *sys_mmap(void *addr, size_t len, int prot, int flags, int fd, long offset) {
 	return (void *)syscall6(SYS_MMAP, (long)addr, len, prot, flags, fd, offset);
 }
 
-static inline long sys_munmap(void *addr, unsigned long len) {
+static inline long sys_munmap(void *addr, size_t len) {
 	return syscall2(SYS_MUNMAP, (long)addr, len);
 }
 
-static inline long sys_rename(const char *oldname, const char *newname) {
+static inline long sys_rename(cstr oldname, cstr newname) {
 	return syscall2(SYS_RENAME, (long)oldname, (long)newname);
 }
 
-static inline long sys_unlink(const char *pathname) {
+static inline long sys_unlink(cstr pathname) {
 	return syscall1(SYS_UNLINK, (long)pathname);
 }
