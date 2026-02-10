@@ -161,3 +161,48 @@ static inline int move(cstr src, str dest) {
 
 	return -1;
 }
+
+static inline int freadlines(int fd, str buf) {
+	long reads;
+
+	while ((reads = sys_read(fd, buf, BUF_SIZE)) > 0) {
+		long written = 0;
+
+		while (written < reads) {
+			long w = sys_write(1, buf + written, reads - written);
+
+			if (w < 0) {
+				sys_close(fd);
+				munmap(buf, BUF_SIZE);
+				return -1;
+			}
+
+			written += w;
+		}
+	}
+
+	sys_close(fd);
+	munmap(buf,BUF_SIZE);
+
+	return (reads < 0) ? -1: 0;
+}
+
+static inline int fread(cstr src) {
+	str buf = (str)mmap(0, BUF_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if ((long)buf < 0) return -1;
+
+	int fd = sys_open(src, O_RDONLY, 0x0);
+	if (fd < 0) {
+		munmap(buf, BUF_SIZE);
+		return -1;
+	}
+
+	int ret = freadlines(fd, buf);
+	if (ret < 0) {
+		sys_close(fd);
+		munmap(buf, BUF_SIZE);
+		return -1;
+	}
+
+	return 0;
+}
