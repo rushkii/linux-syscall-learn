@@ -25,6 +25,23 @@ static inline void println(cstr buf) {
 	sys_write(1, "\n", 1);
 }
 
+static inline void strcat(str dest, cstr src) {
+    // move to the end
+    while (*dest != '\0') {
+        dest++;
+    }
+
+    // copy src characters to dest
+    while (*src != '\0') {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+
+    // null-termination
+    *dest = '\0';
+}
+
 static inline long stat(cstr path, struct stat *src_stat) {
 	return sys_stat(path, src_stat);
 }
@@ -45,7 +62,7 @@ static inline long munmap(void *addr, size_t len) {
 	return sys_munmap(addr, len);
 }
 
-static inline int fcopy(cstr src, cstr dst) {
+static inline int fcopy(cstr src, str dst) {
 	// create a virtual address with the given BUF_SIZE
 	char *buf = (char *)mmap(0, BUF_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	if ((long)buf < 0) return -1;
@@ -58,12 +75,22 @@ static inline int fcopy(cstr src, cstr dst) {
 	}
 
 	struct stat src_stat;
+	struct stat dst_stat;
+
 	ushort mode;
+
+	stat(dst, &dst_stat);
 
 	if (stat(src, &src_stat) < 0) {
 		mode = 0644;
 	} else {
 		mode = src_stat.st_mode;
+	}
+
+	// if src and dst are the same file, copy with additional filename
+	if (src_stat.st_dev == dst_stat.st_dev &&
+	src_stat.st_ino == dst_stat.st_ino) {
+		strcat(dst, " - copy");
 	}
 
 	// open the destination path (argv[2])
@@ -111,7 +138,7 @@ static inline int fcopy(cstr src, cstr dst) {
 	return (bytes_read < 0) ? -1 : 0;
 }
 
-static inline int move(cstr src, cstr dest) {
+static inline int move(cstr src, str dest) {
 	// try to move with rename first
 	long ret = frename(src, dest);
 
