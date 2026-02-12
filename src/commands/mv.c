@@ -1,4 +1,4 @@
-#include "include/high.h"
+#include "../include/high.h"
 
 
 int main(int argc, char *argv[]) {
